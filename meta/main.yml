@@ -1,6 +1,6 @@
 ---
 galaxy_info:
-  author: Nick Hammond
+  author: Oozou (Forked from Nick Hammond)
   description: Role to configure logrotate scripts
   license: BSD
   min_ansible_version: 1.9

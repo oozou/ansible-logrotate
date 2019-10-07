@@ -1,2 +1,5 @@
+install_logrotate: false
 logrotate_conf_dir: "/etc/logrotate.d/"
 logrotate_scripts: []
+logrotate_run_hourly: false
+restart_command: '/etc/init.d/crond restart'
