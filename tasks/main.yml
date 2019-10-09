@@ -1,13 +1,42 @@
 ---
-- name: nickhammond.logrotate | Install logrotate
+- name: oozou.logrotate | Install logrotate
   package:
     name: logrotate
     state: present
-  when: logrotate_scripts is defined and logrotate_scripts|length > 0
+  when: logrotate_scripts is defined and logrotate_scripts|length > 0 and install_logrotate
 
-- name: nickhammond.logrotate | Setup logrotate.d scripts
+- name: oozou.logrotate | Setup logrotate.d scripts
   template:
     src: logrotate.d.j2
     dest: "{{ logrotate_conf_dir }}{{ item.name }}"
   with_items: "{{ logrotate_scripts }}"
   when: logrotate_scripts is defined
+
+- name: Checking if cron.daily exists
+  stat: path=/etc/cron.daily/logrotate
+  register: cron_daily_logrotate
+  when: logrotate_run_hourly
+
+- name: Checking if cron.hourly exists
+  stat: path=/etc/cron.hourly/logrotate
+  register: cron_hourly_logrotate
+  failed_when: cron_hourly_logrotate.stat.exists == false
+  when: logrotate_run_hourly and cron_daily_logrotate.stat.exists == false
+
+- name: Configure hourly log rotation
+  command: mv /etc/cron.daily/logrotate /etc/cron.hourly
+  register: mv_result
+  failed_when: mv_result.rc >= 1
+  when: logrotate_run_hourly and cron_daily_logrotate.stat.exists
+
+- name: Changing the cron.hourly/logrotate file mode
+  file:
+    path: /etc/cron.hourly/logrotate
+    mode: 0644
+  when: logrotate_run_hourly and cron_daily_logrotate.stat.exists
+
+- name: Restarting cron
+  command: "{{ restart_command }}"
+  tags:
+    - never
+    - restart_cron
