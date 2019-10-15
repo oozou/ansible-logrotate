@@ -32,7 +32,7 @@
 - name: Changing the cron.hourly/logrotate file mode
   file:
     path: /etc/cron.hourly/logrotate
-    mode: 0644
+    mode: 0755
   when: logrotate_run_hourly and cron_daily_logrotate.stat.exists
 
 - name: Restarting cron
